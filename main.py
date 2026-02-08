@@ -104,8 +104,57 @@ class Game:
                     self.voted_count+=1
 
                     if self.voted_count >= self.player_count:
-                        self.state="GAME OVER"
+                        self.state="GAME_OVER"
 
+    def get_results(self):
+        winner_name=max(self.votes,key=self.votes.get)
+        max_votes=self.votes[winner_name]
+
+        vote_counts=list(self.votes.values())
+        if vote_counts.count(max_votes) > 1:
+            return "YOU LOST"
+        
+        winner_idx=self.player_names.index(winner_name)
+        if self.roles[winner_idx] == "Imposter":
+            return "YOU WON"
+        
+        else:
+            return "YOU LOST"
+        
+    def draw_game_over(self):
+        result_text=self.get_results()
+
+        color=(0,255,0) if result_text=="YOU WON" else RED
+
+        draw_text(result_text,font_title,color,SCREEN_WIDTH//2,150)
+
+        imposter_name=[self.player_names[i] for i,role in enumerate(self.roles) if role== "Imposter"]
+        draw_text(f"The imposter was: {','.join(imposter_name)}",font_ui,WHITE,SCREEN_WIDTH//2,250)
+
+        mouse_pos=pygame.mouse.get_pos()
+        play_rect=pygame.Rect(SCREEN_WIDTH//2-150,350,300,50)
+        quit_rect=pygame.Rect(SCREEN_WIDTH//2-150,430,300,50)
+
+
+        p_color=GRAY if play_rect.collidepoint(mouse_pos) else WHITE
+        pygame.draw.rect(screen,p_color,play_rect,2,border_radius=10)
+        draw_text("PLAY AGAIN",font_ui,p_color,SCREEN_WIDTH//2,375)
+
+        q_color=GRAY if quit_rect.collidepoint(mouse_pos) else WHITE
+        pygame.draw.rect(screen,q_color,quit_rect,2,border_radius=10)
+        draw_text("QUIT",font_ui,q_color,SCREEN_WIDTH//2,455)
+
+        return play_rect,quit_rect
+    
+    def handle_game_over_events(self,event,play_rect,quit_rect):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if play_rect.collidepoint(event.pos):
+                self.__init__()
+                self.state="MENU"
+
+            elif quit_rect.collidepoint(event.pos):
+                pygame.quit()
+                sys.exit()
 
     def run(self):
         while True:
@@ -152,6 +201,11 @@ class Game:
                 elif self.state == "VOTING_SCREEN":
                     self.handle_voting_events(event)
                     
+                elif self.state=="GAME_OVER":
+                    play_btn,quit_btn=self.draw_game_over()
+                    self.handle_game_over_events(event,play_btn,quit_btn)
+            
+                    
 
             # --- 2. UPDATE LOGIC ---
             if self.state == "ROLE_ASSIGNMENT":
@@ -191,6 +245,9 @@ class Game:
 
             elif self.state=="VOTING_SCREEN":
                 self.draw_voting_screen()
+
+            elif self.state == "GAME_OVER":
+                self.draw_game_over()
                 
 
             pygame.display.flip()
