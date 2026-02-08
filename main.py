@@ -45,6 +45,10 @@ class Game:
         self.is_flipping = False
         self.flip_speed = 15
 
+        #Voting Variables
+        self.votes={}
+        self.voted_count=0
+
     def setup_roles(self):
         """Logic to assign imposters and words"""
         num_imposters = 2 if self.player_count > 5 else 1
@@ -68,6 +72,40 @@ class Game:
                 self.anim_width = 200
                 self.is_flipping = False
                 self.flip_speed = abs(self.flip_speed)
+
+    def setup_voting(self):
+        self.votes={name : 0 for name in self.player_names}
+        self.voted_count=0
+
+    def draw_voting_screen(self):
+        draw_text("VOTING PHASE",font_title,WHITE,SCREEN_WIDTH//2,50)
+        draw_text(f"Votes Cast:{self.voted_count}/{self.player_count}",font_ui,GRAY,SCREEN_WIDTH//2,100)
+
+        mouse_pos=pygame.mouse.get_pos()
+
+        start_y=180
+        for i,name in enumerate(self.player_names):
+            rect=pygame.Rect(SCREEN_WIDTH//2-150,start_y+(i*60),300,50)
+
+            color =RED if rect.collidepoint(mouse_pos) else WHITE
+            pygame.draw.rect(screen,color,rect,2,border_radius=10)
+
+            vote_text=f"{name}:{self.votes[name]} votes"
+            draw_text(vote_text,font_ui,color,SCREEN_WIDTH//2,rect.centery)
+
+    def handle_voting_events(self,event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos=pygame.mouse.get_pos()
+            start_y=180
+            for i, name in enumerate(self.player_names):
+                rect=pygame.Rect(SCREEN_WIDTH//2-150,start_y+(i*60),300,50)
+                if rect.collidepoint(mouse_pos):
+                    self.votes[name]+=1
+                    self.voted_count+=1
+
+                    if self.voted_count >= self.player_count:
+                        self.state="GAME OVER"
+
 
     def run(self):
         while True:
@@ -104,11 +142,16 @@ class Game:
                             if not self.showing_back:
                                 self.current_player_viewing += 1
                                 if self.current_player_viewing >= self.player_count:
-                                    self.state = "GAMEPLAY_START" # Final transition
+                                    self.setup_voting()
+                                    self.state = "VOTING_SCREEN" # Final transition
                                 else:
                                     self.is_flipping = True # Flip back to name side for next player
                             else:
                                 self.is_flipping = True
+                
+                elif self.state == "VOTING_SCREEN":
+                    self.handle_voting_events(event)
+                    
 
             # --- 2. UPDATE LOGIC ---
             if self.state == "ROLE_ASSIGNMENT":
@@ -145,6 +188,10 @@ class Game:
                             draw_text("IMPOSTER", font_ui, RED, SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
                         else:
                             draw_text(self.secret_word, font_ui, BLACK, SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
+
+            elif self.state=="VOTING_SCREEN":
+                self.draw_voting_screen()
+                
 
             pygame.display.flip()
 
