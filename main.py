@@ -142,6 +142,10 @@ class Game:
 
         draw_text(result_text,font_title,color,SCREEN_WIDTH//2,150)
 
+        category=self.categories[self.current_cat_idx]
+        reveal_text=f"The word was: {self.secret_word} ({category})"
+        draw_text(reveal_text,font_ui,WHITE,SCREEN_WIDTH//2,200)
+
         imposter_name=[self.player_names[i] for i,role in enumerate(self.roles) if role== "Imposter"]
         draw_text(f"The imposter was: {','.join(imposter_name)}",font_ui,WHITE,SCREEN_WIDTH//2,250)
 
