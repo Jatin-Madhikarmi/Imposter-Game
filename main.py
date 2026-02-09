@@ -229,7 +229,9 @@ class Game:
             if self.state == "MENU":
                 draw_text("IMPOSTER GAME", font_title, WHITE, SCREEN_WIDTH//2, 100)
                 draw_text(f"Category: {self.categories[self.current_cat_idx]}", font_ui, WHITE, SCREEN_WIDTH//2, 250)
+                draw_text("Forward arrows for changing the category",font_ui,WHITE,SCREEN_WIDTH//2,300)
                 draw_text(f"Players: {self.player_count}", font_ui, WHITE, SCREEN_WIDTH//2, 400)
+                draw_text("Up and Down arrows for changing the category",font_ui,WHITE,SCREEN_WIDTH//2,450)
                 draw_text("Press SPACE to Start", font_ui, GRAY, SCREEN_WIDTH//2, 530)
 
             elif self.state == "INPUT_NAMES":
