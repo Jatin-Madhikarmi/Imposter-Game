@@ -23,11 +23,22 @@ def draw_text(text, font, color, x, y):
     rect = img.get_rect(center=(x, y))
     screen.blit(img, rect)
 
+
+
+def get_random_word(category):
+    words = {
+        "Animals": ["Lion", "Tiger", "Elephant", "Mouse", "Peacock", "Sparrow"],
+        "Food": ["Pizza", "Momo", "Bhat Dhal", "Fried Rice", "Chowmein", "Veg Khana Set"],
+        "Places": ["Chitlang", "Dhulikhel", "Banepa", "Lalitpur", "Bhaktapur", "Kathmandu"],
+        "Objects": ["Pencil", "Pen", "Duster", "Board", "Nails", "Hammer"]
+    }
+    # Return a single random word from the chosen category
+    return random.choice(words[category])
 class Game:
     def __init__(self):
         self.state = "MENU"
         self.categories = ["Animals", "Food", "Places", "Objects"]
-        self.word_database = {"Animals": "Lion", "Food": "Pizza", "Places": "Paris", "Objects": "Hammer"}
+        self.word_database = {}
         
         # State Variables
         self.current_cat_idx = 0
@@ -51,14 +62,17 @@ class Game:
 
     def setup_roles(self):
         """Logic to assign imposters and words"""
+        selected_category = self.categories[self.current_cat_idx]
+        self.secret_word = get_random_word(selected_category)
         num_imposters = 2 if self.player_count > 5 else 1
-        category = self.categories[self.current_cat_idx]
-        self.secret_word = self.word_database.get(category, "Secret")
         
         self.roles = ["Civilian"] * (self.player_count - num_imposters)
         for _ in range(num_imposters):
             self.roles.append("Imposter")
         random.shuffle(self.roles)
+
+        self.current_player_viewing=0
+        self.showing_back=True
 
     def update_animation(self):
         """The math for the 2D scaling (pseudo-rotation)"""
